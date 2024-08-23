@@ -1,0 +1,90 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+}
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+h1 {
+    font-size: 2.5em;
+    color: #333;
+}
+main {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #4CAF50; /* Color verde */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+button:hover {
+    background-color: #45a049; /* Color verde oscuro */
+}
+#accountInfo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+#accountAddress, #accountBalance {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+#output {
+    margin-top: 20px;
+    color: #333;
+    text-align: center;
+}
+#menu button,
+#importForm button,
+#sendForm button {
+    margin-bottom: 10px;
+}
+.copyright {
+    text-align: center;
+    font-size: 0.8em;
+    color: #666;
+}
+#backBtn {
+    margin-top: 20px;
+}
+/* Estilos para dispositivos móviles */
+@media screen and (max-width: 600px) {
+    .container {
+        max-width: 90%;
+    }
+}
