@@ -1,4 +1,4 @@
-/* Estilos generales */
+/* General styles */
 body {
     font-family: 'Roboto', sans-serif;
     background-color: #f5f5f5;
@@ -7,6 +7,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    color: #333; /* Ensure text color is dark for better contrast */
 }
 
 .container {
@@ -14,11 +15,20 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
+    max-width: 800px; /* Increased max-width */
     width: 100%;
+    overflow: auto; /* Ensure container can scroll if content overflows */
 }
 
 header {
+    position: fixed; /*  Fijar la cabecera a la parte superior */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10; /* Asegúrate de que la cabecera esté por encima del contenido */
+    background-color: white; /* Fondo blanco para la cabecera */
+    padding: 10px; /* Espacio interno en la cabecera */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave para la cabecera */
     text-align: center;
     margin-bottom: 20px;
 }
@@ -33,6 +43,8 @@ main {
     border: 1px solid #ddd;
     border-radius: 8px;
     background-color: #fff;
+    overflow-x: auto; /* Allow horizontal scrolling */
+    margin-top: 60px; /* Espacio para la cabecera */
 }
 
 label {
@@ -54,7 +66,7 @@ button {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
-    background-color: #4CAF50; /* Color verde */
+    background-color: #4CAF50; /* Green color */
     color: white;
     border: none;
     border-radius: 4px;
@@ -63,7 +75,7 @@ button {
 }
 
 button:hover {
-    background-color: #45a049; /* Color verde oscuro */
+    background-color: #45a049; /* Dark green color */
 }
 
 #accountInfo {
@@ -112,7 +124,7 @@ footer {
     color: #666;
 }
 
-/* Estilos para dispositivos móviles */
+/* Styles for mobile devices */
 @media screen and (max-width: 600px) {
     .container {
         max-width: 90%;
@@ -127,4 +139,88 @@ footer {
     input[type="password"] {
         padding: 15px;
     }
+}
+
+/* Styles for block explorer */
+#blockExplorer {
+    position: relative;
+    max-height: 400px; /* Ajusta el tamaño según tus necesidades */
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    padding-top: 40px; /* Espacio para el encabezado fijo */
+}
+
+#blockExplorer h2 {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 15px;
+    background-color: white; /* Fondo blanco para que el texto sea legible */
+    z-index: 1; /* Asegura que el encabezado esté por encima del contenido */
+}
+
+.block {
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.accordion {
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: background-color 0.4s ease;
+    background-color: #eee;
+    color: #333; /* Ensure text color is dark for better contrast */
+}
+
+.accordion.active, .accordion:hover {
+    background-color: #ccc;
+}
+
+.panel {
+    padding: 0 10px;
+    display: none;
+    overflow: hidden;
+    background-color: white;
+    overflow-x: auto; /* Allow horizontal scrolling */
+}
+
+.transactions {
+    margin-top: 10px;
+}
+
+.transaction {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 5px;
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    overflow-x: auto; /* Allow horizontal scrolling */
+}
+
+.tx-details {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    overflow-x: auto; /* Allow horizontal scrolling */
+}
+
+.details-button {
+    margin-top: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.details-button:hover {
+    background-color: #0056b3;
 }

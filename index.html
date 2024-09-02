@@ -15,35 +15,38 @@
         </header>
         <main>
             <div id="menu" class="hidden">
-                <button type="button" onclick="mostrarImportar()">Importar Cuenta</button>
-                <button type="button" onclick="consultarSaldo()">Consultar Saldo</button>
-                <button type="button" onclick="mostrarEnviarETH()">Enviar ETH</button>
-                <button type="button" onclick="mostrarExploradorDeBloques()">Explorador de Bloques</button>
+                <button type="button" onclick="showImportForm()" id="importBtn">Import Account</button> 
+                <button type="button" onclick="checkBalance()" id="balanceBtn">Check Balance</button> 
+                <button type="button" onclick="showSendETHForm()" id="sendBtn">Send ETH</button> 
+                <button type="button" onclick="showBlockExplorer()" id="explorerBtn">Block Explorer</button>
             </div>
             <div id="importForm" class="hidden">
-                <label for="accountAddressInput">Dirección de la cuenta:</label>
+                <label for="accountAddressInput" id="accountAddressLabel">Account Address:</label> 
                 <input type="text" id="accountAddressInput" placeholder="0x...">
-                <label for="privateKeyInput">Clave privada:</label>
+                <label for="privateKeyInput" id="privateKeyLabel">Private Key:</label> 
                 <input type="password" id="privateKeyInput" placeholder="...">
-                <button type="button" onclick="importarCuenta()">Importar Cuenta</button>
+                <button type="button" onclick="importAccount()" id="importAccountBtn">Import Account</button> 
             </div>
             <div id="sendForm" class="hidden">
-                <label for="receiverAddressInput">Dirección de destino:</label>
+                <label for="receiverAddressInput" id="receiverAddressLabel">Recipient Address:</label> 
                 <input type="text" id="receiverAddressInput" placeholder="0x...">
-                <label for="amountInput">Cantidad de ETH:</label>
+                <label for="amountInput" id="amountLabel">Amount of ETH:</label> 
                 <input type="text" id="amountInput" placeholder="0.0">
-                <button type="button" onclick="enviarTransaccion()">Enviar ETH</button>
+                <button type="button" onclick="sendTransaction()" id="sendTransactionBtn">Send ETH</button> 
             </div>
             <div id="accountInfo" class="hidden">
-                <p id="accountAddress">Dirección de la cuenta:</p>
-                <p id="accountBalance">Saldo actual:</p>
+                <p id="accountAddress">Account Address:</p> 
+                <p id="accountBalance">Current Balance:</p> 
             </div>
             <div id="blockExplorer" class="hidden">
-                <h2>Explorador de Bloques</h2>
+                <h2>Block Explorer</h2> 
                 <div id="blocks"></div>
             </div>
             <div id="output"></div>
-            <button id="backBtn" class="hidden" type="button" onclick="volverAlMenu()">Atrás</button>
+            <button id="backBtn" class="hidden" type="button" onclick="backToMenu()">Back</button> 
+
+            <!-- Nuevo contenedor para los detalles de la transacción -->
+            <div id="txDetails" class="hidden"></div> 
         </main>
     </div>
     <script src="script.js"></script>
