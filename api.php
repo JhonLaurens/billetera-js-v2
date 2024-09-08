@@ -12742,20 +12742,25 @@ namespace Tqdev\PhpCrudApi {
 // file: src/index.php
 namespace Tqdev\PhpCrudApi {
 
+    require 'vendor/autoload.php';
+
     use Tqdev\PhpCrudApi\Api;
     use Tqdev\PhpCrudApi\Config\Config;
     use Tqdev\PhpCrudApi\RequestFactory;
     use Tqdev\PhpCrudApi\ResponseUtils;
 
     $config = new Config([
-        // 'driver' => 'mysql',
-        // 'address' => 'localhost',
-        // 'port' => '3306',
-        'username' => 'php-crud-api',
-        'password' => 'php-crud-api',
-        'database' => 'php-crud-api',
+        'driver' => 'mysql',
+        'address' => 'localhost',
+        'port' => '3306',
+        'username' => 'root',
+        'password' => '',
+        'database' => 'billetera_eth',
         // 'debug' => false
     ]);
+
+    $api->handle(Request::createFromGlobals())->output();
+    
     $request = RequestFactory::fromGlobals();
     $api = new Api($config);
     $response = $api->handle($request);
