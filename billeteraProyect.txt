@@ -1,0 +1,562 @@
+***proyecto billetra.js
+
+//index.html
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billetera JS</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Billetera JS</h1>
+            <p class="copyright">© JhonLaurens 2024</p>
+        </header>
+        <main>
+            <div id="menu" class="hidden">
+                <button type="button" onclick="showImportForm()" id="importBtn">Import Account</button> 
+                <button type="button" onclick="checkBalance()" id="balanceBtn">Check Balance</button> 
+                <button type="button" onclick="showSendETHForm()" id="sendBtn">Send ETH</button> 
+                <button type="button" onclick="showBlockExplorer()" id="explorerBtn">Block Explorer</button>
+            </div>
+            <div id="importForm" class="hidden">
+                <label for="accountAddressInput" id="accountAddressLabel">Account Address:</label> 
+                <input type="text" id="accountAddressInput" placeholder="0x...">
+                <label for="privateKeyInput" id="privateKeyLabel">Private Key:</label> 
+                <input type="password" id="privateKeyInput" placeholder="...">
+                <button type="button" onclick="importAccount()" id="importAccountBtn">Import Account</button> 
+            </div>
+            <div id="sendForm" class="hidden">
+                <label for="receiverAddressInput" id="receiverAddressLabel">Recipient Address:</label> 
+                <input type="text" id="receiverAddressInput" placeholder="0x...">
+                <label for="amountInput" id="amountLabel">Amount of ETH:</label> 
+                <input type="text" id="amountInput" placeholder="0.0">
+                <button type="button" onclick="sendTransaction()" id="sendTransactionBtn">Send ETH</button> 
+            </div>
+            <div id="accountInfo" class="hidden">
+                <p id="accountAddress">Account Address:</p> 
+                <p id="accountBalance">Current Balance:</p> 
+            </div>
+            <div id="blockExplorer" class="hidden">
+                <h2>Block Explorer</h2> 
+                <div id="blocks"></div>
+            </div>
+            <div id="output"></div>
+            <button id="backBtn" class="hidden" type="button" onclick="backToMenu()">Back</button> 
+
+            <!-- Nuevo contenedor para los detalles de la transacción -->
+            <div id="txDetails" class="hidden"></div> 
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+//script.js
+
+let web3;
+let currentAccount = null;
+
+// Conectar a Ganache al cargar la página
+window.addEventListener('load', async () => {
+    web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
+    try {
+        if (await web3.eth.net.isListening()) {
+            console.log("Connected to Ganache at http://127.0.0.1:7545");
+            document.getElementById('menu').style.display = 'block';
+        } else {
+            alert('Error connecting to Ganache. Make sure Ganache is running.');
+        }
+    } catch (error) {
+        alert('Error connecting to Ganache. Make sure Ganache is running.');
+        console.error(error);
+    }
+});
+
+// Mostrar el formulario para importar la cuenta
+function showImportForm() {
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('importForm').style.display = 'block';
+    document.getElementById('sendForm').style.display = 'none';
+    document.getElementById('accountInfo').style.display = 'none';
+    document.getElementById('blockExplorer').style.display = 'none';
+    document.getElementById('txDetails').style.display = 'none';
+    document.getElementById('backBtn').style.display = 'block';
+}
+
+// Mostrar el formulario para enviar ETH
+function showSendETHForm() {
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('sendForm').style.display = 'block';
+    document.getElementById('importForm').style.display = 'none';
+    document.getElementById('accountInfo').style.display = 'none';
+    document.getElementById('blockExplorer').style.display = 'none';
+    document.getElementById('txDetails').style.display = 'none';
+    document.getElementById('backBtn').style.display = 'block';
+}
+
+// Mostrar el menú principal
+function backToMenu() {
+    document.getElementById('menu').style.display = 'block';
+    document.getElementById('importForm').style.display = 'none';
+    document.getElementById('sendForm').style.display = 'none';
+    document.getElementById('accountInfo').style.display = 'none';
+    document.getElementById('blockExplorer').style.display = 'none';
+    document.getElementById('txDetails').style.display = 'none';
+    document.getElementById('backBtn').style.display = 'none';
+}
+
+// Mostrar el explorador de bloques
+function showBlockExplorer() {
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('blockExplorer').style.display = 'block';
+    document.getElementById('importForm').style.display = 'none';
+    document.getElementById('sendForm').style.display = 'none';
+    document.getElementById('accountInfo').style.display = 'none';
+    document.getElementById('txDetails').style.display = 'none';
+    document.getElementById('backBtn').style.display = 'block';
+
+    getBlocks();
+}
+
+// Obtener información de los bloques
+async function getBlocks() {
+    const blocksDiv = document.getElementById('blocks');
+    blocksDiv.innerHTML = '';
+
+    try {
+        const latestBlockNumber = Number(await web3.eth.getBlockNumber());
+        for (let i = latestBlockNumber; i >= 0 && i > latestBlockNumber - 10; i--) {
+            const block = await web3.eth.getBlock(i);
+            const blockElement = document.createElement('div');
+            blockElement.className = 'block';
+
+            // Crear el botón del acordeón
+            const accordionButton = document.createElement('button');
+            accordionButton.className = 'accordion';
+            accordionButton.innerHTML = `Block #${block.number}`; // Texto del botón en inglés
+
+            // Crear el panel del acordeón
+            const panelDiv = document.createElement('div');
+            panelDiv.className = 'panel';
+            panelDiv.innerHTML = `
+                <p>Mined on: ${new Date(Number(block.timestamp) * 1000).toLocaleString()}</p>
+                <p>Gas Used: ${block.gasUsed.toString()}</p>
+                <p>Block Hash: ${block.hash}</p>
+                <p>Number of Transactions: ${block.transactions.length}</p>
+                <div class="transactions">
+                    ${block.transactions.map(txHash => `
+                        <div class="transaction">
+                            <p>TX Hash: ${txHash}</p>
+                            <button onclick="showTransactionDetails('${txHash}', this)" class="details-button">View Details</button> 
+                            <div class="tx-details hidden"></div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Agregar el evento de clic al botón del acordeón
+            accordionButton.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const panel = this.nextElementSibling;
+                if (panel.style.display === 'block') {
+                    panel.style.display = 'none';
+                } else {
+                    panel.style.display = 'block';
+                }
+            });
+
+            // Agregar el botón y el panel al elemento del bloque
+            blockElement.appendChild(accordionButton);
+            blockElement.appendChild(panelDiv);
+
+            // Agregar el elemento del bloque al contenedor de bloques
+            blocksDiv.appendChild(blockElement);
+        }
+    } catch (error) {
+        console.error("Error al obtener los bloques:", error); 
+        alert(`Error getting blocks. Check the connection. Details: ${error.message}`);
+    }
+}
+
+// Consultar saldo de la cuenta importada
+function checkBalance() {
+    if (currentAccount) {
+        web3.eth.getBalance(currentAccount.address)
+            .then(balance => {
+                document.getElementById('accountInfo').style.display = 'block';
+                document.getElementById('accountAddress').innerText = `Account Address: ${currentAccount.address}`; 
+                document.getElementById('accountBalance').innerText = `Current Balance: ${web3.utils.fromWei(balance, 'ether')} ETH`; 
+            })
+            .catch(error => {
+                console.error("Error al consultar el saldo:", error); 
+            });
+    } else {
+        alert("You must first import an account."); 
+    }
+}
+
+// Enviar transacción
+function sendTransaction() {
+    const receiverAddress = document.getElementById('receiverAddressInput').value;
+    const amount = document.getElementById('amountInput').value;
+
+    if (!web3.utils.isAddress(receiverAddress)) {
+        alert("Invalid recipient address."); 
+        return;
+    }
+
+    if (currentAccount) {
+        try {
+            // Obtener el nonce de la cuenta
+            web3.eth.getTransactionCount(currentAccount.address, 'pending')
+                .then(nonce => {
+                    const transaction = {
+                        nonce: nonce,
+                        to: receiverAddress,
+                        value: web3.utils.toWei(amount, 'ether'),
+                        gas: 21000, // Límite de gas
+                        gasPrice: web3.utils.toWei('20', 'gwei'), 
+                        chainId: web3.eth.chainId
+                    };
+
+                    web3.eth.accounts.signTransaction(transaction, currentAccount.privateKey)
+                        .then(signedTx => web3.eth.sendSignedTransaction(signedTx.rawTransaction))
+                        .then(receipt => {
+                            alert("ETH sent successfully."); 
+                        })
+                        .catch(error => {
+                            console.error("Error sending the transaction:", error); 
+                            alert("Error sending the transaction. Check the connection and the account.");
+                        });
+                })
+                .catch(error => {
+                    console.error("Error obtaining the nonce:", error); 
+                    alert("Error obtaining the nonce. Check the connection and the account.");
+                });
+        } catch (error) {
+            alert("Error sending the transaction. Check the connection and the account.");
+            console.error("Error sending the transaction:", error);
+        }
+    } else {
+        alert("You must first import an account."); 
+    }
+}
+
+// Importar cuenta
+function importAccount() {
+    const accountAddress = document.getElementById('accountAddressInput').value;
+    const privateKey = document.getElementById('privateKeyInput').value;
+
+    if (!web3.utils.isAddress(accountAddress)) {
+        alert("Invalid account address."); 
+        return;
+    }
+
+    try {
+        const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+        if (account.address.toLowerCase() !== accountAddress.toLowerCase()) {
+            alert("The private key does not match the provided address."); 
+            return;
+        }
+
+        currentAccount = {
+            address: accountAddress,
+            privateKey: privateKey
+        };
+
+        document.getElementById('importForm').style.display = 'none';
+        document.getElementById('accountInfo').style.display = 'block';
+        document.getElementById('accountAddress').innerText = `Account Address: ${currentAccount.address}`; 
+        checkBalance();
+
+        alert("Account imported successfully!"); 
+    } catch (error) {
+        alert("Invalid private key."); 
+        console.error("Error importing the account:", error); 
+    }
+}
+
+// Función para mostrar los detalles de una transacción
+async function showTransactionDetails(txHash, button) {
+    try {
+        const tx = await web3.eth.getTransaction(txHash);
+        if (!tx) {
+            throw new Error("Transaction not found"); 
+        }
+
+        const txDetailsDiv = button.nextElementSibling;
+        txDetailsDiv.innerHTML = `
+            <h3>Transaction Details</h3> 
+            <p>Hash: ${tx.hash}</p>
+            <p>From: ${tx.from}</p>
+            <p>To: ${tx.to}</p>
+            <p>Amount: ${web3.utils.fromWei(tx.value.toString(), 'ether')} ETH</p>
+            <p>Gas Used: ${tx.gasUsed ? tx.gasUsed.toString() : 'N/A'}</p>
+            <p>Nonce: ${tx.nonce ? tx.nonce.toString() : 'N/A'}</p>
+        `;
+        txDetailsDiv.classList.toggle('hidden');
+    } catch (error) {
+        console.error("Error getting transaction details:", error); 
+        alert(`Error getting transaction details. Check the connection. Details: ${error.message}`);
+    }
+}
+
+// Ocultar detalles de la transacción
+function hideTransactionDetails() {
+    const txDetailsDiv = document.getElementById('txDetails');
+    txDetailsDiv.style.display = 'none';
+}
+
+//styles.css
+
+/* General styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #333; /* Ensure text color is dark for better contrast */
+}
+
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px; /* Increased max-width */
+    width: 100%;
+    overflow: auto; /* Ensure container can scroll if content overflows */
+}
+
+header {
+    position: fixed; /*  Fijar la cabecera a la parte superior */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10; /* Asegúrate de que la cabecera esté por encima del contenido */
+    background-color: white; /* Fondo blanco para la cabecera */
+    padding: 10px; /* Espacio interno en la cabecera */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave para la cabecera */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2.5em;
+    color: #333;
+}
+
+main {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    overflow-x: auto; /* Allow horizontal scrolling */
+    margin-top: 60px; /* Espacio para la cabecera */
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #4CAF50; /* Green color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+button:hover {
+    background-color: #45a049; /* Dark green color */
+}
+
+#accountInfo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#accountAddress, #accountBalance {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+#output {
+    margin-top: 20px;
+    color: #333;
+    text-align: center;
+}
+
+#menu button,
+#importForm button,
+#sendForm button {
+    margin-bottom: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+.console {
+    height: 200px;
+    overflow-y: scroll;
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+#backBtn {
+    margin-top: 20px;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* Styles for mobile devices */
+@media screen and (max-width: 600px) {
+    .container {
+        max-width: 90%;
+    }
+
+    button {
+        width: 100%;
+        padding: 15px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        padding: 15px;
+    }
+}
+
+/* Styles for block explorer */
+#blockExplorer {
+    position: relative;
+    max-height: 400px; /* Ajusta el tamaño según tus necesidades */
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    padding-top: 40px; /* Espacio para el encabezado fijo */
+}
+
+#blockExplorer h2 {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 15px;
+    background-color: white; /* Fondo blanco para que el texto sea legible */
+    z-index: 1; /* Asegura que el encabezado esté por encima del contenido */
+}
+
+.block {
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.accordion {
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: background-color 0.4s ease;
+    background-color: #eee;
+    color: #333; /* Ensure text color is dark for better contrast */
+}
+
+.accordion.active, .accordion:hover {
+    background-color: #ccc;
+}
+
+.panel {
+    padding: 0 10px;
+    display: none;
+    overflow: hidden;
+    background-color: white;
+    overflow-x: auto; /* Allow horizontal scrolling */
+}
+
+.transactions {
+    margin-top: 10px;
+}
+
+.transaction {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 5px;
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    overflow-x: auto; /* Allow horizontal scrolling */
+}
+
+.tx-details {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    word-wrap: break-word; /* Ensure long words break to the next line */
+    overflow-x: auto; /* Allow horizontal scrolling */
+}
+
+.details-button {
+    margin-top: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.details-button:hover {
+    background-color: #0056b3;
+}
+
+//package.json
+
+{
+  "name": "billetera",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "speakeasy": "^2.0.0",
+    "web3": "^4.12.1"
+  }
+}
